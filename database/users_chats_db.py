@@ -30,12 +30,10 @@ class Database:
         'link': ""
     }
     
-    def __init__(self, DATABASE_URL, DATABASE_NAME):
-        self._client = motor.motor_asyncio.AsyncIOMotorClient(uri)
-        self.db = self._client[database_name]
-        self.col = self.db.users
-        self.grp = self.db.groups
-
+    def __init__(self):
+        self.col = mydb.Users
+        self.grp = mydb.Groups
+        
     def new_user(self, id, name):
         return dict(
             id = id,
@@ -174,4 +172,9 @@ class Database:
         return (await self.db.command("dbstats"))['dataSize']
         
 
+    def __init__(self, uri, database_name):
+        self._client = motor.motor_asyncio.AsyncIOMotorClient(uri)
+        self.db = self._client[database_name]
+
+db = Database(DATABASE_URI, DATABASE_NAME)
 db = Database()
