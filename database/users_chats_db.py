@@ -173,9 +173,9 @@ class Database:
         return (await self.db.command("dbstats"))['dataSize']
         
 
-    def __init__(self, uri, database_name):
-        self._client = motor.motor_asyncio.AsyncIOMotorClient(uri)
-        self.db = self._client[database_name]
+#    def __init__(self, uri, database_name):
+#        self._client = motor.motor_asyncio.AsyncIOMotorClient(uri)
+#        self.db = self._client[database_name]
 
-db = Database(DATABASE_URL, DATABASE_NAME)
-#db = Database()
+#db = Database(DATABASE_URL, DATABASE_NAME)
+db = Database()
