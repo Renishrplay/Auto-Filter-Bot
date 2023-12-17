@@ -178,4 +178,4 @@ class Database:
         self.db = self._client[database_name]
 
 db = Database(DATABASE_URL, DATABASE_NAME)
-db = Database()
+#db = Database()
