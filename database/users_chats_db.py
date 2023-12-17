@@ -30,7 +30,7 @@ class Database:
         'link': ""
     }
     
-    def __init__(self, uri, database_name):
+    def __init__(self, DATABASE_URL, DATABASE_NAME):
         self._client = motor.motor_asyncio.AsyncIOMotorClient(uri)
         self.db = self._client[database_name]
         self.col = self.db.users
