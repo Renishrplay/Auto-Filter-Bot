@@ -44,28 +44,28 @@ else:
 
 # Channels
 INDEX_CHANNELS = [int(index_channels) if index_channels.startswith("-") else index_channels for index_channels in environ.get('INDEX_CHANNELS', '').split()]
-if len(INDEX_CHANNELS) == 0:
-    print('Info - INDEX_CHANNELS is empty')
+#if len(INDEX_CHANNELS) == 0:
+#    print('Info - INDEX_CHANNELS is empty')
 AUTH_CHANNEL = [int(auth_channels) for auth_channels in environ.get('AUTH_CHANNEL', '').split()]
-if len(AUTH_CHANNEL) == 0:
-    print('Info - AUTH_CHANNEL is empty')
+#if len(AUTH_CHANNEL) == 0:
+#    print('Info - AUTH_CHANNEL is empty')
 LOG_CHANNEL = environ.get('LOG_CHANNEL', '')
-if len(LOG_CHANNEL) == 0:
-    print('Error - LOG_CHANNEL is missing, exiting now')
-    exit()
-else:
-    LOG_CHANNEL = int(LOG_CHANNEL)
+#if len(LOG_CHANNEL) == 0:
+#    print('Error - LOG_CHANNEL is missing, exiting now')
+#    exit()
+#else:
+ #   LOG_CHANNEL = int(LOG_CHANNEL)
     
 SUPPORT_GROUP = environ.get('SUPPORT_GROUP', '')
-if len(SUPPORT_GROUP) == 0:
-    print('Error - SUPPORT_GROUP is missing, exiting now')
-    exit()
-else:
-    SUPPORT_GROUP = int(SUPPORT_GROUP)
+#if len(SUPPORT_GROUP) == 0:
+#    print('Error - SUPPORT_GROUP is missing, exiting now')
+#    exit()
+#else:
+#    SUPPORT_GROUP = int(SUPPORT_GROUP)
     
 OPENAI_API = environ.get('OPENAI_API', '')
-if len(OPENAI_API) == 0:
-    print('Info - OPENAI_API is empty')
+#if len(OPENAI_API) == 0:
+#    print('Info - OPENAI_API is empty')
 
 # MongoDB information
 DATABASE_URL = environ.get('DATABASE_URL', "")
@@ -108,22 +108,22 @@ VERIFY_TUTORIAL = environ.get("VERIFY_TUTORIAL", "https://t.me/SL_Bots_Updates")
 INDEX_EXTENSIONS = [extensions.lower() for extensions in environ.get('INDEX_EXTENSIONS', 'mp4 mkv').split()]
 
 # stream features vars
-BIN_CHANNEL = environ.get("BIN_CHANNEL", "")
+BIN_CHANNEL = environ.get("BIN_CHANNEL", LOG_CHANNEL)
 if len(BIN_CHANNEL) == 0:
     print('Error - BIN_CHANNEL is missing, exiting now')
     exit()
 else:
     BIN_CHANNEL = int(BIN_CHANNEL)
 URL = environ.get("URL", "")
-if len(URL) == 0:
-    print('Error - URL is missing, exiting now')
-    exit()
-else:
-    if URL.startswith(('https://', 'http://')):
-        if not URL.endswith("/"):
-            URL += '/'
-    elif is_valid_ip(URL):
-        URL = f'http://{URL}/'
-    else:
-        print('Error - URL is not valid, exiting now')
-        exit()
+#if len(URL) == 0:
+#    print('Error - URL is missing, exiting now')
+#    exit()
+#else:
+#    if URL.startswith(('https://', 'http://')):
+#        if not URL.endswith("/"):
+ #           URL += '/'
+ #   elif is_valid_ip(URL):
+#        URL = f'http://{URL}/'
+ #   else:
+#        print('Error - URL is not valid, exiting now')
+#        exit()
