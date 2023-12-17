@@ -176,5 +176,5 @@ class Database:
         self._client = motor.motor_asyncio.AsyncIOMotorClient(uri)
         self.db = self._client[database_name]
 
-db = Database(DATABASE_URI, DATABASE_NAME)
+db = Database(DATABASE_URL, DATABASE_NAME)
 db = Database()
