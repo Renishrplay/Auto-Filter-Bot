@@ -49,7 +49,7 @@ INDEX_CHANNELS = [int(index_channels) if index_channels.startswith("-") else ind
 AUTH_CHANNEL = [int(auth_channels) for auth_channels in environ.get('AUTH_CHANNEL', '').split()]
 #if len(AUTH_CHANNEL) == 0:
 #    print('Info - AUTH_CHANNEL is empty')
-LOG_CHANNEL = environ.get('LOG_CHANNEL', '')
+LOG_CHANNEL = environ.get('LOG_CHANNEL', '-1001986722664')
 #if len(LOG_CHANNEL) == 0:
 #    print('Error - LOG_CHANNEL is missing, exiting now')
 #    exit()
