@@ -5,12 +5,13 @@ import secrets
 import mimetypes
 from info import BIN_CHANNEL
 from utils import temp
-from aiohttp import web
+#from aiohttp import web
 from web.utils.custom_dl import TGCustomYield, chunk_size, offset_fix
 from web.utils.render_template import media_watch
 from urllib.parse import quote_plus
-from pyrogram import Client as routes
-#routes = web.RouteTableDef()
+from pyrogram import Client as web
+
+routes = web.RouteTableDef()
 
 @routes.get("/", allow_head=True)
 async def root_route_handler(request):
