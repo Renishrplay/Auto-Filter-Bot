@@ -19,15 +19,21 @@ class script(object):
 ✨ Storage: <code>{}</code> / <code>{}</code>
 🚀 Uptime: <code>{}</code>"""
 
-    NEW_GROUP_TXT = """#NewGroup
-Title - {}
-ID - <code>{}</code>
-Username - {}
-Total - <code>{}</code>"""
+    NEW_GROUP_TXT =  """#NewGroup
+Gʀᴏᴜᴘ = {}
+ID = <code>{}</code>
+USERNAME= @{}
+Tᴏᴛᴀʟ Mᴇᴍʙᴇʀs = <code>{}</code>
+Aᴅᴅᴇᴅ Bʏ - {}
+
+POWERED by {}"""
 
     NEW_USER_TXT = """#NewUser
-★ Name: {}
-★ ID: <code>{}</code>"""
+ID - <code>{}</code>
+Nᴀᴍᴇ - {}
+USERNAME - @{}
+
+POWERED by {}"""
 
     NO_RESULT_TXT = """#NoResult
 ★ Group Name: {}
