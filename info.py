@@ -24,19 +24,19 @@ PORT = int(environ.get('PORT', '8080'))
 PICS = (environ.get('PICS', 'https://graph.org/file/1aabc32de4442dbc5a2a0.jpg https://graph.org/file/9458bd38633097021468e.jpg https://graph.org/file/b352b109ff6ab64a0dec5.jpg https://graph.org/file/1e58ec7e88373d43fe698.jpg https://graph.org/file/e29fe074270cda1833462.jpg https://graph.org/file/ce952c92d4c42fd588213.jpg https://graph.org/file/5ee19f028c4585af12b6c.jpg https://graph.org/file/41dfb4d472208520d0314.jpg https://graph.org/file/ca6de43379db0999546ad.jpg https://graph.org/file/2212ca8121a17edb5a2e7.jpg')).split()
 
 # Bot Admins
-ADMINS = environ.get('ADMINS', '1927155351')
+ADMINS = environ.get('ADMINS', '')
 
 # Channels
 INDEX_CHANNELS = [int(index_channels) if index_channels.startswith("-") else index_channels for index_channels in environ.get('INDEX_CHANNELS', '').split()]
 AUTH_CHANNEL = [int(auth_channels) for auth_channels in environ.get('AUTH_CHANNEL', '').split()]
 LOG_CHANNEL = environ.get('LOG_CHANNEL', '-1001986722664')    
 SUPPORT_GROUP = environ.get('SUPPORT_GROUP', '')    
-OPENAI_API = environ.get('OPENAI_API', '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')
+OPENAI_API = environ.get('OPENAI_API', '')
 
 # MongoDB information
 DATABASE_URL = environ.get('DATABASE_URL', "")
 DATABASE_NAME = environ.get('DATABASE_NAME', "ANUSHKA")
-COLLECTION_NAME = environ.get('COLLECTION_NAME', 'Telegram_files')
+COLLECTION_NAME = environ.get('COLLECTION_NAME', 'Files')
 
 # Links
 SUPPORT_LINK = environ.get('SUPPORT_LINK', 'https://telegram.dog/Technical_Discussion_Group')
