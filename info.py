@@ -31,7 +31,7 @@ INDEX_CHANNELS = [int(index_channels) if index_channels.startswith("-") else ind
 AUTH_CHANNEL = [int(auth_channels) for auth_channels in environ.get('AUTH_CHANNEL', '').split()]
 LOG_CHANNEL = environ.get('LOG_CHANNEL', '-1001986722664')    
 SUPPORT_GROUP = environ.get('SUPPORT_GROUP', '')    
-OPENAI_API = environ.get('OPENAI_API', '')
+OPENAI_API = environ.get('OPENAI_API', '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')
 
 # MongoDB information
 DATABASE_URL = environ.get('DATABASE_URL', "")
