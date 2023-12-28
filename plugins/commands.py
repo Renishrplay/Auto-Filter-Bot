@@ -25,7 +25,7 @@ async def start(client, message):
         if not await db.get_chat(message.chat.id):
             total = await client.get_chat_members_count(message.chat.id)
             username = f'@{message.chat.username}' if message.chat.username else 'Private'
-            await client.send_message(LOG_CHANNEL, script.NEW_GROUP_TXT.format(message.chat.title, message.chat.id, username, total))       
+            await client.send_message(LOG_CHANNEL, script.NEW_GROUP_TXT.format(message.chat.title, message.chat.id, username, total, "Unknown", temp.B_MEN))       
             await db.add_chat(message.chat.id, message.chat.title)
         wish = get_wish()
         btn = [[
@@ -37,7 +37,7 @@ async def start(client, message):
         
     if not await db.is_user_exist(message.from_user.id):
         await db.add_user(message.from_user.id, message.from_user.first_name)
-        await client.send_message(LOG_CHANNEL, script.NEW_USER_TXT.format(message.from_user.mention, message.from_user.id))
+        await client.send_message(LOG_CHANNEL, script.NEW_USER_TXT.format(message.from_user.id, message.from_user.mention, message.from_user.username, temp.B_MEN))
 
     verify_status = await get_verify_status(message.from_user.id)
     if verify_status['is_verified'] and VERIFY_EXPIRE < (time.time() - verify_status['verified_time']):
