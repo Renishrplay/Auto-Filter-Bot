@@ -18,7 +18,7 @@ def is_valid_ip(ip):
 API_ID = environ.get('API_ID', '')
 API_HASH = environ.get('API_HASH', '')
 BOT_TOKEN = environ.get('BOT_TOKEN', '')
-PORT = int(environ.get('PORT', '8080'))
+PORT = int(environ.get('PORT', '80'))
 
 # Bot pics
 PICS = (environ.get('PICS', 'https://graph.org/file/1aabc32de4442dbc5a2a0.jpg https://graph.org/file/9458bd38633097021468e.jpg https://graph.org/file/b352b109ff6ab64a0dec5.jpg https://graph.org/file/1e58ec7e88373d43fe698.jpg https://graph.org/file/e29fe074270cda1833462.jpg https://graph.org/file/ce952c92d4c42fd588213.jpg https://graph.org/file/5ee19f028c4585af12b6c.jpg https://graph.org/file/41dfb4d472208520d0314.jpg https://graph.org/file/ca6de43379db0999546ad.jpg https://graph.org/file/2212ca8121a17edb5a2e7.jpg')).split()
