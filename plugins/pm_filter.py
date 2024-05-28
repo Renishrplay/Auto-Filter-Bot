@@ -102,9 +102,10 @@ async def group_search(client, message):
             return
             
         else:
-          dc = await message.reply_text(f"{message.text} 🎯sᴇᴀʀᴄʜɪɴɢ....") 
-await asyncio.sleep(5)
-await dc.delete()
+             dc = await message.reply_text(f"{message.text} 🎯sᴇᴀʀᴄʜɪɴɢ....") 
+            await asyncio.sleep(5)
+            await dc.delete()
+            
             await auto_filter(client, message)
     else:
         k = await message.reply_text('Auto Filter Off! ❌')
@@ -492,14 +493,13 @@ async def cb_handler(client: Client, query: CallbackQuery):
             InlineKeyboardButton("+ ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ +", url=f'http://t.me/{temp.U_NAME}?startgroup=start')
         ],[
             InlineKeyboardButton('🔎 sᴇᴀʀᴄʜ ɪɴʟɪɴᴇ 🔍', switch_inline_query_current_chat='')
-      #  ],[
-      #      InlineKeyboardButton('⚡️ ᴜᴘᴅᴀᴛᴇs ᴄʜᴀɴɴᴇʟ ⚡️', url=UPDATES_LINK),
-     #       InlineKeyboardButton('💡 Support Group 💡', url=SUPPORT_LINK)
         ],[
-            InlineKeyboardButton('👨‍🚒 ʜᴇʟᴘ', callback_data='help')
+            InlineKeyboardButton('⚡️ ᴜᴘᴅᴀᴛᴇs ᴄʜᴀɴɴᴇʟ ⚡️', url=UPDATES_LINK),
+            InlineKeyboardButton('💡 Support Group 💡', url=SUPPORT_LINK)
         ],[
-            InlineKeyboardButton('📚 ᴀʙᴏᴜᴛ', callback_data='my_about')
-      #      InlineKeyboardButton('👤 ᴏᴡɴᴇʀ', callback_data='my_owner')
+            InlineKeyboardButton('👨‍🚒 ʜᴇʟᴘ', callback_data='help'),
+            InlineKeyboardButton('📚 ᴀʙᴏᴜᴛ', callback_data='my_about'),
+            InlineKeyboardButton('👤 ᴏᴡɴᴇʀ', callback_data='my_owner')
         ],[
             InlineKeyboardButton('💰 ᴇᴀʀɴ ᴍᴏɴᴇʏ ʙʏ ʙᴏᴛ 💰', callback_data='earn')
         ]]
@@ -989,5 +989,3 @@ async def advantage_spell_chok(message):
         await message.delete()
     except:
         pass
-
-
