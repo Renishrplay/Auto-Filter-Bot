@@ -110,6 +110,9 @@ async def give_filter(client, message):
             return
             
         else:
+          dc = await message.reply_text(f"{message.text} 🎯sᴇᴀʀᴄʜɪɴɢ....") 
+await asyncio.sleep(5)
+await dc.delete()
             await auto_filter(client, message)
     else:
         k = await message.reply_text('Auto Filter Off! ❌')
