@@ -57,7 +57,6 @@ if len(LOG_CHANNEL) == 0:
     exit()
 else:
     LOG_CHANNEL = int(LOG_CHANNEL)
-IS_FSUB = is_enabled('IS_FSUB', True)
 
 # support group
 SUPPORT_GROUP = environ.get('SUPPORT_GROUP', '-1001903383973')
@@ -100,9 +99,10 @@ SHORTLINK_API = environ.get("SHORTLINK_API", "36f1ae74ba1aa01e5bd73bdd0bc22aa915
 VERIFY_EXPIRE = int(environ.get('VERIFY_EXPIRE', 86400)) # Add time in seconds
 WELCOME_TEXT = environ.get("WELCOME_TEXT", script.WELCOME_TEXT)
 INDEX_EXTENSIONS = [extensions.lower() for extensions in environ.get('INDEX_EXTENSIONS', 'mp4 mkv').split()]
-PM_DELETE_TIME = int(environ.get('PM_DELETE_TIME', 600))
+PM_FILE_DELETE_TIME = int(environ.get('PM_FILE_DELETE_TIME', '3600'))
 
 # boolean settings
+IS_PM_SEARCH = is_enabled('IS_PM_SEARCH', False)
 IS_VERIFY = is_enabled('IS_VERIFY', False)
 AUTO_DELETE = is_enabled('AUTO_DELETE', False)
 WELCOME = is_enabled('WELCOME', False)
@@ -138,9 +138,5 @@ else:
         print('Error - URL is not valid, exiting now')
         exit()
 
-#others
-REACTIONS = [
-    "🔥", "❤️", "😍", "⚡", "😇",
-    "🤩", "🎉", "🤗", "🤩", "😎",
-    "🤝", "🤯", "🤓"
-]
+#start_command_reactions
+REACTIONS = ["🤝", "😇", "🤗", "😍", "👍", "🎅", "😐", "🥰", "🤩", "😱", "🤣", "😘", "👏", "😛", "😈", "🎉", "⚡️", "🫡", "🤓", "😎", "🏆", "🔥", "🤭", "🌚", "🆒", "👻", "😁"] #don't add any emoji because tg not support all emoji reactions

@@ -1,28 +1,29 @@
 import os
-import logging
-import random, string
-import asyncio
-import time
-import datetime
-from Script import script
-from pyrogram import Client, filters, enums
-from pyrogram.errors import ChatAdminRequired, FloodWait, ButtonDataInvalid
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from database.ia_filterdb import Media, get_file_details, unpack_new_file_id, delete_files
-from database.users_chats_db import db
-from info import INDEX_CHANNELS, ADMINS, IS_VERIFY, VERIFY_TUTORIAL, VERIFY_EXPIRE, TUTORIAL, SHORTLINK_API, SHORTLINK_URL, AUTH_CHANNEL, DELETE_TIME, SUPPORT_LINK, UPDATES_LINK, LOG_CHANNEL, PICS, PROTECT_CONTENT, IS_STREAM, IS_FSUB, PAYMENT_QR, OWNER_USERNAME, REACTIONS, PM_DELETE_TIME as pm_delete_time
-from utils import get_settings, get_size, is_subscribed, is_check_admin, get_shortlink, get_verify_status, update_verify_status, save_group_settings, temp, get_readable_time, get_wish, get_seconds
 import re
 import json
 import base64
 import sys
 from shortzy import Shortzy
 from telegraph import upload_file
+import random, string
+import asyncio
+from time import time as time_now
+import datetime
+from Script import script
+from pyrogram import Client, filters, enums
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from database.ia_filterdb import Media, get_file_details, unpack_new_file_id, delete_files
+from database.users_chats_db import db
+from info import INDEX_CHANNELS, ADMINS, IS_VERIFY, VERIFY_TUTORIAL, VERIFY_EXPIRE, TUTORIAL, SHORTLINK_API, SHORTLINK_URL, AUTH_CHANNEL, DELETE_TIME, SUPPORT_LINK, UPDATES_LINK, LOG_CHANNEL, PICS, PROTECT_CONTENT, IS_STREAM, PAYMENT_QR, OWNER_USERNAME, REACTIONS, PM_FILE_DELETE_TIME
+from utils import get_settings, get_size, is_subscribed, is_check_admin, get_shortlink, get_verify_status, update_verify_status, save_group_settings, temp, get_readable_time, get_wish, get_seconds
 
 @Client.on_message(filters.command("start") & filters.incoming)
 async def start(client, message):
     botid = client.me.id
-    await message.react(emoji=random.choice(REACTIONS))
+    try:
+        await message.react(emoji=random.choice(REACTIONS), big=True)
+    except:
+        await message.react(emoji="⚡️", big=True)
     if message.chat.type in [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP]:
         if not await db.get_chat(message.chat.id):
             total = await client.get_chat_members_count(message.chat.id)
@@ -34,7 +35,10 @@ async def start(client, message):
             InlineKeyboardButton('⚡️ ᴜᴘᴅᴀᴛᴇs ᴄʜᴀɴɴᴇʟ ⚡️', url=UPDATES_LINK),
             InlineKeyboardButton('💡 Support Group 💡', url=SUPPORT_LINK)
         ]]
-        await message.reply(text=f"<b>ʜᴇʏ {message.from_user.mention}, <i>{wish}</i>\nʜᴏᴡ ᴄᴀɴ ɪ ʜᴇʟᴘ ʏᴏᴜ??</b>", reply_markup=InlineKeyboardMarkup(btn))
+        if message.from_user:
+            await message.reply(text=f"<b>ʜᴇʏ {message.from_user.mention}, <i>{wish}</i>\nʜᴏᴡ ᴄᴀɴ ɪ ʜᴇʟᴘ ʏᴏᴜ??</b>", reply_markup=InlineKeyboardMarkup(btn))
+        else:
+            await message.reply(text=f"<b>ʜᴇʏ, <i>{wish}</i>\nʜᴏᴡ ᴄᴀɴ ɪ ʜᴇʟᴘ ʏᴏᴜ??</b>", reply_markup=InlineKeyboardMarkup(btn))
         return 
         
     if not await db.is_user_exist(message.from_user.id):
@@ -42,7 +46,7 @@ async def start(client, message):
         await client.send_message(LOG_CHANNEL, script.NEW_USER_TXT.format(message.from_user.mention, message.from_user.id))
 
     verify_status = await get_verify_status(message.from_user.id)
-    if verify_status['is_verified'] and VERIFY_EXPIRE < (time.time() - verify_status['verified_time']):
+    if verify_status['is_verified'] and datetime.datetime.now() > verify_status['expire_time']:
         await update_verify_status(message.from_user.id, is_verified=False)
     
     if (len(message.command) != 2) or (len(message.command) == 2 and message.command[1] == 'start'):
@@ -91,7 +95,8 @@ async def start(client, message):
         verify_status = await get_verify_status(message.from_user.id)
         if verify_status['verify_token'] != token:
             return await message.reply("Your verify token is invalid.")
-        await update_verify_status(message.from_user.id, is_verified=True, verified_time=time.time())
+        expiry_time = datetime.datetime.now() + datetime.timedelta(seconds=VERIFY_EXPIRE)
+        await update_verify_status(message.from_user.id, is_verified=True, verified_time=time_now(), expire_time=expiry_time)
         if verify_status["link"] == "":
             reply_markup = None
         else:
@@ -119,20 +124,21 @@ async def start(client, message):
         pass
 
     settings = await get_settings(int(mc.split("_", 2)[1]))
-    if settings.get('is_fsub', IS_FSUB) and not await db.has_premium_access(message.from_user.id):
-        btn = await is_subscribed(client, message, settings['fsub'])
-        if btn:
-            btn.append(
-                [InlineKeyboardButton("🔁 Try Again 🔁", callback_data=f"checksub#{mc}")]
-            )
-            reply_markup = InlineKeyboardMarkup(btn)
-            await message.reply_photo(
-                photo=random.choice(PICS),
-                caption=f"👋 Hello {message.from_user.mention},\n\nPlease join my 'Updates Channel' and try again. 😇",
-                reply_markup=reply_markup,
-                parse_mode=enums.ParseMode.HTML
-            )
-            return 
+    if not await db.has_premium_access(message.from_user.id):
+        if settings['fsub']:
+            btn = await is_subscribed(client, message, settings['fsub'])
+            if btn:
+                btn.append(
+                    [InlineKeyboardButton("🔁 Try Again 🔁", callback_data=f"checksub#{mc}")]
+                )
+                reply_markup = InlineKeyboardMarkup(btn)
+                await message.reply_photo(
+                    photo=random.choice(PICS),
+                    caption=f"👋 Hello {message.from_user.mention},\n\nPlease join my 'Updates Channel' and try again. 😇",
+                    reply_markup=reply_markup,
+                    parse_mode=enums.ParseMode.HTML
+                )
+                return 
         
     if mc.startswith('all'):
         _, grp_id, key = mc.split("_", 2)
@@ -173,11 +179,11 @@ async def start(client, message):
                 reply_markup=InlineKeyboardMarkup(btn)
             )
             file_ids.append(msg.id)
-        time = get_readable_time(int(pm_delete_time))
+        time = get_readable_time(PM_FILE_DELETE_TIME)
         vp = await message.reply(f"Nᴏᴛᴇ: Tʜɪs ғɪʟᴇs ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇ ɪɴ {time} ᴛᴏ ᴀᴠᴏɪᴅ ᴄᴏᴘʏʀɪɢʜᴛs. Sᴀᴠᴇ ᴛʜᴇ ғɪʟᴇs ᴛᴏ sᴏᴍᴇᴡʜᴇʀᴇ ᴇʟsᴇ")
-        await asyncio.sleep(int(pm_delete_time))
+        await asyncio.sleep(PM_FILE_DELETE_TIME)
         btns = [[
-            InlineKeyboardButton('ɢᴇᴛ ғɪʟᴇs ᴀɢᴀɪɴ', callback_data=f"getmultifile_{key}_{grp_id}")
+            InlineKeyboardButton('ɢᴇᴛ ғɪʟᴇs ᴀɢᴀɪɴ', callback_data=f"get_del_send_all_files#{grp_id}#{key}")
         ]]
         await client.delete_messages(
             chat_id=message.chat.id,
@@ -238,11 +244,11 @@ async def start(client, message):
         protect_content=protect_content,
         reply_markup=InlineKeyboardMarkup(btn)
     )
-    time = get_readable_time(int(pm_delete_time))
+    time = get_readable_time(PM_FILE_DELETE_TIME)
     msg = await vp.reply(f"Nᴏᴛᴇ: Tʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇ ɪɴ {time} ᴛᴏ ᴀᴠᴏɪᴅ ᴄᴏᴘʏʀɪɢʜᴛs. Sᴀᴠᴇ ᴛʜᴇ ғɪʟᴇ ᴛᴏ sᴏᴍᴇᴡʜᴇʀᴇ ᴇʟsᴇ")
-    await asyncio.sleep(int(pm_delete_time))
+    await asyncio.sleep(PM_FILE_DELETE_TIME)
     btns = [[
-        InlineKeyboardButton('ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ', callback_data=f"getfile#{file_id}#{grp_id}")
+        InlineKeyboardButton('ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ', callback_data=f"get_del_file#{grp_id}#{file_id}")
     ]]
     await msg.delete()
     await vp.delete()
@@ -250,8 +256,6 @@ async def start(client, message):
 
 @Client.on_message(filters.command('index_channels'))
 async def channels_info(bot, message):
-    """Send basic information of index channels"""
-    await message.react(emoji=random.choice(REACTIONS))
     user_id = message.from_user.id
     if user_id not in ADMINS:
         await message.delete()
@@ -268,7 +272,6 @@ async def channels_info(bot, message):
 
 @Client.on_message(filters.command('stats'))
 async def stats(bot, message):
-    await message.react(emoji=random.choice(REACTIONS))
     user_id = message.from_user.id
     if user_id not in ADMINS:
         await message.delete()
@@ -281,12 +284,11 @@ async def stats(bot, message):
     u_size = get_size(await db.get_db_size())
     u_size_int = await db.get_db_size()
     f_size = get_size(536870912 - u_size_int)
-    uptime = get_readable_time(time.time() - temp.START_TIME)
+    uptime = get_readable_time(time_now() - temp.START_TIME)
     await msg.edit(script.STATUS_TXT.format(files, users, chats, premium, u_size, f_size, uptime))    
     
 @Client.on_message(filters.command('settings'))
 async def settings(client, message):
-    await message.react(emoji=random.choice(REACTIONS))
     userid = message.from_user.id if message.from_user else None
     if not userid:
         return await message.reply("<b>You are Anonymous admin you can't use this command !</b>")
@@ -320,9 +322,6 @@ async def settings(client, message):
             InlineKeyboardButton('Result Page', callback_data=f'setgs#links#{settings["links"]}#{str(grp_id)}'),
             InlineKeyboardButton('⛓ Link' if settings["links"] else '🧲 Button', callback_data=f'setgs#links#{settings["links"]}#{str(grp_id)}')
         ],[
-            InlineKeyboardButton('Fsub', callback_data=f'setgs#is_fsub#{settings.get("is_fsub", IS_FSUB)}#{str(grp_id)}'),
-            InlineKeyboardButton('✅ On' if settings.get("is_fsub", IS_FSUB) else '❌ Off', callback_data=f'setgs#is_fsub#{settings.get("is_fsub", IS_FSUB)}#{str(grp_id)}')
-        ],[
             InlineKeyboardButton('Stream', callback_data=f'setgs#is_stream#{settings.get("is_stream", IS_STREAM)}#{str(grp_id)}'),
             InlineKeyboardButton('✅ On' if settings.get("is_stream", IS_STREAM) else '❌ Off', callback_data=f'setgs#is_stream#{settings.get("is_stream", IS_STREAM)}#{str(grp_id)}')
         ],[
@@ -338,7 +337,6 @@ async def settings(client, message):
 
 @Client.on_message(filters.command('set_template'))
 async def save_template(client, message):
-    await message.react(emoji=random.choice(REACTIONS))
     userid = message.from_user.id if message.from_user else None
     if not userid:
         return await message.reply("<b>You are Anonymous admin you can't use this command !</b>")
@@ -358,7 +356,6 @@ async def save_template(client, message):
     
 @Client.on_message(filters.command('set_caption'))
 async def save_caption(client, message):
-    await message.react(emoji=random.choice(REACTIONS))
     userid = message.from_user.id if message.from_user else None
     if not userid:
         return await message.reply("<b>You are Anonymous admin you can't use this command !</b>")
@@ -378,7 +375,6 @@ async def save_caption(client, message):
         
 @Client.on_message(filters.command('set_shortlink'))
 async def save_shortlink(client, message):
-    await message.react(emoji=random.choice(REACTIONS))
     userid = message.from_user.id if message.from_user else None
     if not userid:
         return await message.reply("<b>You are Anonymous admin you can't use this command !</b>")
@@ -403,7 +399,6 @@ async def save_shortlink(client, message):
     
 @Client.on_message(filters.command('get_custom_settings'))
 async def get_custom_settings(client, message):
-    await message.react(emoji=random.choice(REACTIONS))
     userid = message.from_user.id if message.from_user else None
     if not userid:
         return await message.reply("<b>You are Anonymous admin you can't use this command !</b>")
@@ -437,7 +432,6 @@ Force Channels: {str(settings['fsub'])[1:-1] if settings['fsub'] else 'Not Set'}
 
 @Client.on_message(filters.command('set_welcome'))
 async def save_welcome(client, message):
-    await message.react(emoji=random.choice(REACTIONS))
     userid = message.from_user.id if message.from_user else None
     if not userid:
         return await message.reply("<b>You are Anonymous admin you can't use this command !</b>")
@@ -457,7 +451,6 @@ async def save_welcome(client, message):
         
 @Client.on_message(filters.command('delete'))
 async def delete_file(bot, message):
-    await message.react(emoji=random.choice(REACTIONS))
     user_id = message.from_user.id
     if user_id not in ADMINS:
         await message.delete()
@@ -479,7 +472,6 @@ async def delete_file(bot, message):
  
 @Client.on_message(filters.command('delete_all'))
 async def delete_all_index(bot, message):
-    await message.react(emoji=random.choice(REACTIONS))
     user_id = message.from_user.id
     if user_id not in ADMINS:
         await message.delete()
@@ -496,7 +488,6 @@ async def delete_all_index(bot, message):
 
 @Client.on_message(filters.command('set_tutorial'))
 async def set_tutorial(client, message):
-    await message.react(emoji=random.choice(REACTIONS))
     userid = message.from_user.id if message.from_user else None
     if not userid:
         return await message.reply("<b>You are Anonymous admin you can't use this command !</b>")
@@ -514,48 +505,8 @@ async def set_tutorial(client, message):
     await save_group_settings(grp_id, 'tutorial', tutorial)
     await message.reply_text(f"Successfully changed tutorial for {title} to\n\n{tutorial}")
 
-@Client.on_message(filters.command('set_fsub'))
-async def set_fsub(client, message):
-    await message.react(emoji=random.choice(REACTIONS))
-    userid = message.from_user.id if message.from_user else None
-    if not userid:
-        return await message.reply("<b>You are Anonymous admin you can't use this command !</b>")
-    chat_type = message.chat.type
-    if chat_type not in [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP]:
-        return await message.reply_text("Use this command in group.")      
-    grp_id = message.chat.id
-    title = message.chat.title
-    if not await is_check_admin(client, grp_id, message.from_user.id):
-        return await message.reply_text('You not admin in this group.')
-    vp = message.text.split(" ", 1)[1]
-    if vp.lower() in ["Off", "off", "False", "false", "Turn Off", "turn off"]:
-        await save_group_settings(grp_id, 'is_fsub', False)
-        return await message.reply_text("Successfully Turned Off !")
-    elif vp.lower() in ["On", "on", "True", "true", "Turn On", "turn on"]:
-        await save_group_settings(grp_id, 'is_fsub', True)
-        return await message.reply_text("Successfully Turned On !")
-    try:
-        ids = message.text.split(" ", 1)[1]
-        fsub_ids = list(map(int, ids.split()))
-    except IndexError:
-        return await message.reply_text("Command Incomplete!\n\nCan multiple channel add separate by spaces. Like: /set_fsub id1 id2 id3")
-    except ValueError:
-        return await message.reply_text('Make sure ids is integer.')        
-    channels = "Channels:\n"
-    for id in fsub_ids:
-        try:
-            chat = await client.get_chat(id)
-        except Exception as e:
-            return await message.reply_text(f"{id} is invalid!\nMake sure this bot admin in that channel.\n\nError - {e}")
-        if chat.type != enums.ChatType.CHANNEL:
-            return await message.reply_text(f"{id} is not channel.")
-        channels += f'{chat.title}\n'
-    await save_group_settings(grp_id, 'fsub', fsub_ids)
-    await message.reply_text(f"Successfully set force channels for {title} to\n\n{channels}")
-
 @Client.on_message(filters.command('telegraph'))
 async def telegraph(bot, message):
-    await message.react(emoji=random.choice(REACTIONS))
     reply_to_message = message.reply_to_message
     if not reply_to_message:
         return await message.reply('Reply to any photo or video.')
@@ -580,7 +531,6 @@ async def telegraph(bot, message):
 
 @Client.on_message(filters.command('ping'))
 async def ping(client, message):
-    await message.react(emoji=random.choice(REACTIONS))
     start_time = time.monotonic()
     msg = await message.reply("👀")
     end_time = time.monotonic()
@@ -588,7 +538,6 @@ async def ping(client, message):
     
 @Client.on_message(filters.command("add_premium"))
 async def give_premium_cmd_handler(client, message):
-    await message.react(emoji=random.choice(REACTIONS))
     user_id = message.from_user.id
     if user_id not in ADMINS:
         await message.delete()
@@ -613,14 +562,12 @@ async def give_premium_cmd_handler(client, message):
         
 @Client.on_message(filters.command("remove_premium"))
 async def remove_premium_cmd_handler(client, message):
-    await message.react(emoji=random.choice(REACTIONS))
     user_id = message.from_user.id
     if user_id not in ADMINS:
         await message.delete()
         return
     if len(message.command) == 2:
         user_id = int(message.command[1])  # Convert the user_id to integer
-      #  time = message.command[2]
         time = "1s"
         seconds = await get_seconds(time)
         if seconds > 0:
@@ -630,7 +577,8 @@ async def remove_premium_cmd_handler(client, message):
             await message.reply_text("Premium access removed to the user.")
             await client.send_message(
                 chat_id=user_id,
-                text=f"<b>premium removed by admins \n\n Contact Admin if this is mistake \n\n 👮 Admin : {OWNER_USERNAME} \n</b>",                
+                text=f"<b>premium removed by admins \n\n Contact Admin if this is mistake \n\n 👮 Admin : {OWNER_USERNAME} \n</b>",
+                disable_web_page_preview=True
             )
         else:
             await message.reply_text("Invalid time format.'")
@@ -638,8 +586,7 @@ async def remove_premium_cmd_handler(client, message):
         await message.reply_text("Usage: /remove_premium user_id")
         
 @Client.on_message(filters.command("plan"))
-async def plans_cmd_handler(client, message):                
-    await message.react(emoji=random.choice(REACTIONS))
+async def plans_cmd_handler(client, message):
     btn = [            
         [InlineKeyboardButton("ꜱᴇɴᴅ ᴘᴀʏᴍᴇɴᴛ ʀᴇᴄᴇɪᴘᴛ 🧾", url=OWNER_USERNAME)],
         [InlineKeyboardButton("⚠️ ᴄʟᴏsᴇ / ᴅᴇʟᴇᴛᴇ ⚠️", callback_data="close_data")]
@@ -653,7 +600,6 @@ async def plans_cmd_handler(client, message):
         
 @Client.on_message(filters.command("myplan"))
 async def check_plans_cmd(client, message):
-    await message.react(emoji=random.choice(REACTIONS))
     user_id  = message.from_user.id
     if await db.has_premium_access(user_id):         
         remaining_time = await db.check_remaining_uasge(user_id)             
@@ -670,3 +616,73 @@ async def check_plans_cmd(client, message):
         await message.reply_text(f"**😢 You Don't Have Any Premium Subscription.\n\n Check Out Our Premium /plan**",reply_markup=reply_markup)
         await asyncio.sleep(2)
         await m.delete()
+
+@Client.on_message(filters.private & filters.command("set_pm_search"))
+async def set_pm_search(client, message):
+    user_id = message.from_user.id
+    bot_id = client.me.id
+    if user_id not in ADMINS:
+        await message.delete()
+        return
+    try:
+        option = (message.text).split(" ", 1)[1].lower()
+    except IndexError:
+        return await message.reply_text("<b>💔 Invalid option. Please send me 'on' or 'off' / 'true' or 'false' after the command.</b>")
+    if option in ['on', 'true']:
+        await db.update_pm_search_status(bot_id, enable=True)
+        await message.reply_text("<b>✅️ ᴘᴍ ꜱᴇᴀʀᴄʜ ᴇɴᴀʙʟᴇᴅ ꜰʀᴏᴍ ɴᴏᴡ ᴜꜱᴇʀꜱ ᴀʙʟᴇ ᴛᴏ ꜱᴇᴀʀᴄʜ ᴍᴏᴠɪᴇ ɪɴ ʙᴏᴛ ᴘᴍ.</b>")
+    elif option in ['off', 'false']:
+        await db.update_pm_search_status(bot_id, enable=False)
+        await message.reply_text("<b>❌️ ᴘᴍ ꜱᴇᴀʀᴄʜ ᴅɪꜱᴀʙʟᴇᴅ, ɴᴏ ᴏɴᴇ ᴜꜱᴇʀꜱ ᴀʙʟᴇ ᴛᴏ ꜱᴇᴀʀᴄʜ ᴍᴏᴠɪᴇ ɪɴ ʙᴏᴛ ᴘᴍ.</b>")
+    else:
+        await message.reply_text("<b>💔 Invalid option. Please send me 'on' or 'off' / 'true' or 'false' after the command.</b>")
+
+@Client.on_message(filters.command('set_fsub'))
+async def set_fsub(client, message):
+    user_id = message.from_user.id
+    if not user_id:
+        return await message.reply("<b>You are Anonymous admin you can't use this command !</b>")
+    chat_type = message.chat.type
+    if chat_type not in [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP]:
+        return await message.reply_text("Use this command in group.")      
+    grp_id = message.chat.id
+    title = message.chat.title
+    if not await is_check_admin(client, grp_id, user_id):
+        return await message.reply_text('You not admin in this group.')
+    try:
+        ids = message.text.split(" ", 1)[1]
+        fsub_ids = list(map(int, ids.split()))
+    except IndexError:
+        return await message.reply_text("Command Incomplete!\n\nCan multiple channel add separate by spaces. Like: /set_fsub id1 id2 id3")
+    except ValueError:
+        return await message.reply_text('Make sure ids is integer.')        
+    channels = "Channels:\n"
+    for id in fsub_ids:
+        try:
+            chat = await client.get_chat(id)
+        except Exception as e:
+            return await message.reply_text(f"<code>{id}</code> is invalid!\nMake sure this bot admin in that channel.\n\nError - {e}")
+        if chat.type != enums.ChatType.CHANNEL:
+            return await message.reply_text(f"<code>{id}</code> is not channel.")
+        channels += f'{chat.title}\n'
+    await save_group_settings(grp_id, 'fsub', fsub_ids)
+    await message.reply_text(f"Successfully set force channels for {title} to\n\n<code>{channels}</code>")
+
+@Client.on_message(filters.command('remove_fsub'))
+async def remove_fsub(client, message):
+    grp_id = message.chat.id
+    settings = await get_settings(int(grp_id))
+    user_id = message.from_user.id
+    chat_type = message.chat.type
+    if not user_id:
+        return await message.reply("<b>You are Anonymous admin you can't use this command !</b>")
+    if chat_type not in [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP]:
+        return await message.reply_text("Use this command in group.")
+    if not await is_check_admin(client, grp_id, user_id):
+        return await message.reply_text('You not admin in this group.')
+    if settings['fsub'] == "":
+        await query.answer("ʏᴏᴜ ᴅɪᴅɴ'ᴛ ᴀᴅᴅᴇᴅ ᴀɴʏ ꜰᴏʀᴄᴇ sᴜʙsᴄʀɪʙᴇ ᴄʜᴀɴɴᴇʟ...", show_alert=True)
+        return
+    await save_group_settings(grp_id, 'fsub', "")
+    await message.reply_text("<b>Successfully removed your force channel id...</b>")
+
